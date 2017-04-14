@@ -154,7 +154,6 @@ Dash.Machine.prototype.set = function (_this) {
     }
 
     function initCams() {
-        //var camY = 142, camW = 122, camFOV = 20;
         var camY = 130, camW = 122, camFOV = 20;
         camera = new THREE.PerspectiveCamera(camFOV, window.innerWidth / window.innerHeight, 1, 10000);
         camera.position.set(-camW, camY, camW);
