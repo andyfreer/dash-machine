@@ -1,0 +1,144 @@
+* {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+body {
+    background-color: #FFFFFF;
+    overflow: hidden;
+    color: #EEEEEE;
+    font-family: monospace;
+    font-size: 20px;
+}
+
+canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+@font-face {
+    font-family: "Dash Font";
+    src: url('../fonts/gunshipital.ttf') format("truetype");
+}
+
+.hudContainer {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    pointer-events: none;
+}
+
+#loader {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: rgba(255, 255, 255, 1);
+    z-index: 10;
+}
+
+#loaderInfo {
+    width: 100%;
+    height: 100%;
+
+    display: -webkit-box;
+    display: -moz-box;
+    display: box;
+
+    -webkit-box-orient: horizontal;
+    -moz-box-orient: horizontal;
+    box-orient: horizontal;
+
+    -webkit-box-pack: center;
+    -moz-box-pack: center;
+    box-pack: center;
+
+    -webkit-box-align: center;
+    -moz-box-align: center;
+    box-align: center;
+
+    color: #ffffff;
+    text-align: center;
+    cursor: pointer;
+}
+
+.hud {
+    background-color: transparent;
+    position: absolute;
+    font-family: "Dash Font", Verdana, Tahoma;
+    font-style: italic;
+}
+
+#logo a img {
+    position: absolute;
+    left: 10px;
+    top: 18px;
+    height: 30px;
+}
+
+.topLeft {
+    left: 15px;
+    top: 65px;
+}
+
+.topRight {
+    right: 10px;
+    top: 10px;
+    text-align: right;
+    font-size: 48px;
+}
+
+.bottomLeft {
+    left: 10px;
+    bottom: 10px;
+    font-size: 24px;
+}
+
+.bottomRight {
+    right: 10px;
+    bottom: 10px;
+}
+
+.bottomMiddle {
+    margin: auto;
+    width: 100%;
+    text-align: center;
+    padding: 10px;
+    bottom: 5px;
+}
+
+#socialIcons li {
+    display: inline;
+}
+
+#socialIcons a {
+    Text-decoration: none;
+    outline: none;
+    border: 0px none transparent;
+}
+
+#socialIcons img {
+    width: 20px;
+}
+
+.hudTextLabel {
+    color: #ffffff;
+    font-size: 16px;
+    margin-top: 5px;
+    margin-right: 5px;
+    display: inline-block;
+    vertical-align: top;
+}
+
+.hudText {
+    color: #ffffff;
+    font-size: 39px;
+    display: inline-block;
+    vertical-align: top;
+    margin-right: 5px;
+}
