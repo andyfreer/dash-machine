@@ -76,8 +76,10 @@
 </div>
 
 <script>
-    window.onload = function (e) {
-        var dm = new Dash.Machine();
+    var dm = new Dash.Machine();
+
+    window.addEventListener('load', function (e) {
+
         dm.Start({
             blocker: document.getElementById('loader'),
             bestBlockHeightText: document.getElementById('bestBlockHeightText'),
@@ -85,7 +87,7 @@
             canvas: document.getElementById("canvas"),
             apiURL: 'https://insight.dash.org:443/'
         });
-    }
+    });
 </script>
 </body>
 </html>
