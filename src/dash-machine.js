@@ -227,19 +227,30 @@ Dash.Machine.prototype.set = function (_this) {
         groundMesh.receiveShadow = true;
         scene.add(groundMesh);
 
+        // Physics material (billiards..)
+        world.addContactMaterial(new CANNON.ContactMaterial(_this.Materials.defPhysMat, _this.Materials.defPhysMat, {
+            friction: 0.01,
+            restitution: 0.005,
+            contactEquationStiffness: 1e12,
+            contactEquationRelaxation: 3,
+            frictionEquationStiffness: 1e8,
+            frictionEquationRegularizationTime: 10,
+            contactEquationRegularizationTime: 10
+        }));
+
         // collider - we need to translate CANNON.js cylnder geom to THREE.js by aligning Z to Y axis
         var groundShape = new CANNON.Cylinder(radius * 1.01, radius * 1.01, cheight, rSegs / 3);
         var quat = new CANNON.Quaternion();
         quat.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
         groundShape.transformAllPoints(new CANNON.Vec3(0, 0, 0), quat);
-        var groundBody = new CANNON.Body({mass: 0});
+        var groundBody = new CANNON.Body({ mass: 0, material: _this.Materials.defPhysMat });
         groundBody.addShape(groundShape);
         groundBody.position.set(0, yOffset - (cheight / 2) + 0.5, 0);
         world.addBody(groundBody);
 
         // additional collider, Cannon can't do continuous collisions
         var shape = new CANNON.Box(new CANNON.Vec3(radius * 0.69, 1, radius * 0.69));
-        var body = new CANNON.Body({mass: 0});
+        var body = new CANNON.Body({ mass: 0, material: _this.Materials.defPhysMat });
         body.addShape(shape);
         body.position.set(0, -0.5, 0);
         world.addBody(body);
@@ -385,6 +396,8 @@ Dash.Machine.prototype.objects = function (_this) {
         objs.data[i] = data;
         var w = 0;
         var mass = 0;
+
+        // volume and mass
         if (objType === ObjType.Tx) {
             if (data < 1) {
                 w = Math.max(data * scaleMulti, 0.4 * scaleMulti);
@@ -396,19 +409,19 @@ Dash.Machine.prototype.objects = function (_this) {
             mass = Math.pow(w, 3) * 4.18879 * massMulti;
         } else if (objType = ObjType.Block) {
             w = 4.2 * scaleMulti;
-            mass = 25 * massMulti;
+            mass = 75 * massMulti;
         }
 
         // first use
         if (objs.meshs[i] == null) {
-            objs.bodys[i] = new CANNON.Body({mass: mass});
+            objs.bodys[i] = new CANNON.Body({mass: mass, material: _this.Materials.defPhysMat });
             if (objType === ObjType.Tx) {
                 objs.bodys[i].addShape(new CANNON.Sphere(w));
             } else if (objType === ObjType.Block) {
                 objs.bodys[i].addShape(new CANNON.Box(new CANNON.Vec3(w / 2, w / 2, w / 2)));
             }
-            objs.bodys[i].linearDamping = 0;
-            objs.bodys[i].angularDamping = 0;
+            objs.bodys[i].linearDamping = 0.15;
+            objs.bodys[i].angularDamping = 0.15;
             world.addBody(objs.bodys[i]);
             createMesh(objs, objType, i);
         } else {
@@ -562,6 +575,7 @@ Dash.Machine.prototype.materials = function (_this) {
     this.matPlinth2 = loadMat('assets/textures/plinth2.png');
     this.matSwatch = loadMat('assets/textures/swatch-blue.png');
     this.geomCube = new THREE.BoxGeometry(1, 1, 1);
+    this.defPhysMat = new CANNON.Material("defPhysMat");
 
     this.GetGradTex = function (color) {
         var c = document.createElement("canvas");
