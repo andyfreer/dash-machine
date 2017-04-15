@@ -16,7 +16,7 @@ No build/npm etc yet - just edit the JavaScript in [/src/dash-machine.js](https:
 
 Vendor code can be found in [/src/vendor](https://github.com/andyfreer/dash-machine/tree/master/src/vendor)  and content files are stored in [/assets/](https://github.com/andyfreer/dash-machine/tree/master/assets).
 
-###Overview
+### Overview
 
 When the page loads the Dash.Machine object in  [/src/dash-machine.js](https://github.com/andyfreer/dash-machine/blob/master/src/dash-machine.js)  is created which runs the visualization in an HTML5 canvas passed into the constructor.
 
