@@ -192,8 +192,8 @@ Dash.Machine.prototype.set = function (_this) {
         _this.scene.add(_this.Set.spotLight);
 
         _this.Set.spotLight2 = createSpotlight(200 * dist, 200 * dist, 50 * dist, spotLightIntensity, 2048);
-        _this.Set.spotLight3 = createSpotlight(200 * dist, 200 * dist, 50 * dist, spotLightIntensity * 0.7, 4096);
-        _this.Set.spotLight4 = createSpotlight(-200 * dist, 200 * dist, 50 * dist, spotLightIntensity * 0.3, 4096);
+        _this.Set.spotLight3 = createSpotlight(200 * dist, 200 * dist, 50 * dist, spotLightIntensity * 0.3, 4096);
+        _this.Set.spotLight4 = createSpotlight(-200 * dist, 200 * dist, 50 * dist, spotLightIntensity * 0.7, 4096);
     }
 
     function initSet() {
