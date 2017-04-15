@@ -20,9 +20,11 @@ Dash.Machine = function () {
     this.camera = null;
     this.scene = null;
     this.renderer = null;
+    this.canvas = null;
     this.world = null;
     this.bestBlock = null;
     this.playMode = null;
+    this.QualityLevel = null;
     this.maxTx = 250;
     this.maxBlocks = 24;
 
@@ -33,9 +35,9 @@ Dash.Machine = function () {
         _this.playMode = _this.PlayModes.preload;
         _this.options = options || {};
 
-        canvas = _this.options.canvas || document.getElementById("canvas");
-        world = new CANNON.World();
-        scene = new THREE.Scene();
+        _this.canvas = _this.options.canvas || document.getElementById("canvas");
+        _this.world = new CANNON.World();
+        _this.scene = new THREE.Scene();
 
         this.Net.Init();
         this.Set.Init();
@@ -82,13 +84,13 @@ Dash.Machine = function () {
         requestAnimationFrame(Update);
     }
 
-    // run a benchmark at start to determine quality level
+    // run a benchmark at start to determine quality level and preload assets
     function PreLoad() {
         if (_this.options.blocker) {
-            for (var i = 0; i < _this.maxTx / 3; i++) {
+            for (var i = 0; i < (_this.maxTx / 3); i++) {
                 _this.Objects.AddTX((Math.random() < 0.9) ? Math.random() * 2 : Math.random() * 200);
             }
-            for (var i = 0; i < _this.maxBlocks / 3; i++) {
+            for (var i = 0; i < (_this.maxBlocks / 3); i++) {
                 _this.Objects.addBlock(1);
             }
             var preloadTime = 3200;
@@ -125,8 +127,8 @@ Dash.Machine.prototype.set = function (_this) {
     };
 
     this.Update = function () {
-        world.step(_this.Settings.TimeStep);
-        renderer.render(scene, camera);
+        _this.world.step(_this.Settings.TimeStep);
+        _this.renderer.render(_this.scene, _this.camera);
         orbitControl.update();
     };
 
@@ -137,31 +139,31 @@ Dash.Machine.prototype.set = function (_this) {
         if (n.match(/Android/i) || n.match(/webOS/i) || n.match(/iPhone/i) || n.match(/iPad/i) || n.match(/iPod/i) || n.match(/BlackBerry/i) || n.match(/Windows Phone/i))
             isMobile = true;
 
-        renderer = new THREE.WebGLRenderer({
-            canvas: canvas,
+        _this.renderer = new THREE.WebGLRenderer({
+            canvas: _this.canvas,
             precision: isMobile ? "lowp" : "mediump",
             antialias: !isMobile,
             sortObjects: false,
             preserveDrawingBuffer: false
         });
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        renderer.setSize(window.innerWidth, window.innerHeight);
+        _this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        _this.renderer.setSize(window.innerWidth, window.innerHeight);
 
         window.addEventListener('resize', function () {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+            _this.camera.aspect = window.innerWidth / window.innerHeight;
+            _this.camera.updateProjectionMatrix();
+            _this.renderer.setSize(window.innerWidth, window.innerHeight);
         }, false);
     }
 
     function initCams() {
         var camY = 130, camW = 122, camFOV = 20;
-        camera = new THREE.PerspectiveCamera(camFOV, window.innerWidth / window.innerHeight, 1, 10000);
-        camera.position.set(-camW, camY, camW);
-        camera.lookAt(new THREE.Vector3(0, 0, 0));
+        _this.camera = new THREE.PerspectiveCamera(camFOV, window.innerWidth / window.innerHeight, 1, 10000);
+        _this.camera.position.set(-camW, camY, camW);
+        _this.camera.lookAt(new THREE.Vector3(0, 0, 0));
 
         // orbit
-        orbitControl = new THREE.OrbitControls(camera, canvas);
+        orbitControl = new THREE.OrbitControls(_this.camera, _this.canvas);
         orbitControl.target.set(0, 0, 0);
         orbitControl.minDistance = 150;
         orbitControl.maxDistance = 275;
@@ -179,7 +181,7 @@ Dash.Machine.prototype.set = function (_this) {
         var ambientLight = new THREE.AmbientLight(0x3D4143);
         ambientLight.intensity = 3.25;
         ambientLight.castShadow = false;
-        scene.add(ambientLight);
+        _this.scene.add(ambientLight);
 
         var dist = 1;
         var spotLightIntensity = 1;
@@ -187,7 +189,7 @@ Dash.Machine.prototype.set = function (_this) {
         _this.Set.spotLight.position.set(200 * dist, 200 * dist, 50 * dist);
         _this.Set.spotLight.castShadow = false;
         _this.Set.spotLight2.intensity = spotLightIntensity;
-        scene.add(_this.Set.spotLight);
+        _this.scene.add(_this.Set.spotLight);
 
         _this.Set.spotLight2 = createSpotlight(200 * dist, 200 * dist, 50 * dist, spotLightIntensity, 2048);
         _this.Set.spotLight3 = createSpotlight(200 * dist, 200 * dist, 50 * dist, spotLightIntensity * 0.7, 4096);
@@ -206,7 +208,7 @@ Dash.Machine.prototype.set = function (_this) {
                 depthWrite: false,
                 fog: false
             }));
-        scene.add(back);
+        _this.scene.add(back);
 
         // ground cylinder
         var radius = 50, rSegs = 64, cheight = 100, yOffset = 0;
@@ -226,24 +228,24 @@ Dash.Machine.prototype.set = function (_this) {
         groundMesh.position.y = yOffset - (cheight / 2) + 0.5;
         groundMesh.castShadow = false;
         groundMesh.receiveShadow = true;
-        scene.add(groundMesh);
+        _this.scene.add(groundMesh);
 
         // collider - we need to translate CANNON.js cylnder geom to THREE.js by aligning Z to Y axis
         var groundShape = new CANNON.Cylinder(radius * 1.01, radius * 1.01, cheight, rSegs / 3);
         var quat = new CANNON.Quaternion();
         quat.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
         groundShape.transformAllPoints(new CANNON.Vec3(0, 0, 0), quat);
-        var groundBody = new CANNON.Body({ mass: 0, material: _this.Materials.groundPhysMat });
+        var groundBody = new CANNON.Body({mass: 0, material: _this.Materials.groundPhysMat});
         groundBody.addShape(groundShape);
         groundBody.position.set(0, yOffset - (cheight / 2) + 0.5, 0);
-        world.addBody(groundBody);
+        _this.world.addBody(groundBody);
 
         // additional collider, Cannon can't do continuous collisions
         var shape = new CANNON.Box(new CANNON.Vec3(radius * 0.69, 1, radius * 0.69));
-        var body = new CANNON.Body({ mass: 0, material: _this.Materials.groundPhysMat });
+        var body = new CANNON.Body({mass: 0, material: _this.Materials.groundPhysMat});
         body.addShape(shape);
         body.position.set(0, -0.5, 0);
-        world.addBody(body);
+        _this.world.addBody(body);
     }
 
     function createSpotlight(x, y, z, intensity, mapSize) {
@@ -257,7 +259,7 @@ Dash.Machine.prototype.set = function (_this) {
         sl.shadow.mapSize.height = mapSize;
         sl.castShadow = (mapSize === null);
         sl.intensity = intensity;
-        scene.add(sl);
+        _this.scene.add(sl);
         return sl;
     }
 };
@@ -344,11 +346,11 @@ Dash.Machine.prototype.objects = function (_this) {
     };
 
     function getTXGeom(amount) {
-        if (amount < 1) return (worldQualityLevel === _this.Settings.QualityLevels.lo) ? geo12 : geo20;
-        else if (amount < 10)  return (worldQualityLevel === _this.Settings.QualityLevels.lo) ? geo12 : geo24;
-        else if (amount < 100)  return (worldQualityLevel === _this.Settings.QualityLevels.lo) ? geo16 : geo24;
-        else if (amount < 1000)  return (worldQualityLevel === _this.Settings.QualityLevels.lo) ? geo16 : geo32;
-        else  return (worldQualityLevel === _this.Settings.QualityLevels.lo) ? geo24 : geo48;
+        if (amount < 1) return (_this.QualityLevel === _this.Settings.QualityLevels.lo) ? geo12 : geo20;
+        else if (amount < 10)  return (_this.QualityLevel === _this.Settings.QualityLevels.lo) ? geo12 : geo24;
+        else if (amount < 100)  return (_this.QualityLevel === _this.Settings.QualityLevels.lo) ? geo16 : geo24;
+        else if (amount < 1000)  return (_this.QualityLevel === _this.Settings.QualityLevels.lo) ? geo16 : geo32;
+        else  return (_this.QualityLevel === _this.Settings.QualityLevels.lo) ? geo24 : geo48;
     }
 
     function addObject(objType, data) {
@@ -361,9 +363,9 @@ Dash.Machine.prototype.objects = function (_this) {
 
             // find the first inactive obj we can replace
             var freeSlot = -1;
-            for (var i = 0; i < objs.active.length; i++) {
-                if (objs.active[i] === false) {
-                    freeSlot = i;
+            for (var j = 0; j < objs.active.length; j++) {
+                if (objs.active[j] === false) {
+                    freeSlot = j;
                     break;
                 }
             }
@@ -371,10 +373,10 @@ Dash.Machine.prototype.objects = function (_this) {
                 // get the oldest obj we can replace
                 var oldestID = objs.objLifetimeCount;
                 var oldestIndex = 0;
-                for (var i = 0; i < objs.objID.length; i++) {
-                    if (objs.objID[i] < oldestID) {
-                        oldestID = objs.objID[i];
-                        oldestIndex = i;
+                for (var j = 0; j < objs.objID.length; j++) {
+                    if (objs.objID[j] < oldestID) {
+                        oldestID = objs.objID[j];
+                        oldestIndex = j;
                     }
                 }
                 freeSlot = oldestIndex;
@@ -382,7 +384,6 @@ Dash.Machine.prototype.objects = function (_this) {
             removeObject(objs, freeSlot);
             i = freeSlot;
         }
-
         objs.data[i] = data;
         var w = 0;
         var mass = 0;
@@ -402,9 +403,10 @@ Dash.Machine.prototype.objects = function (_this) {
             mass = 100 * massMulti;
         }
 
-        // first use
+        // first use?
         if (objs.meshs[i] == null) {
-            objs.bodys[i] = new CANNON.Body({mass: mass, material: _this.Materials.objPhysMat });
+            // create the mesh and rigid body
+            objs.bodys[i] = new CANNON.Body({mass: mass, material: _this.Materials.objPhysMat});
             if (objType === ObjType.Tx) {
                 objs.bodys[i].addShape(new CANNON.Sphere(w));
             } else if (objType === ObjType.Block) {
@@ -412,7 +414,7 @@ Dash.Machine.prototype.objects = function (_this) {
             }
             objs.bodys[i].linearDamping = 0.15;
             objs.bodys[i].angularDamping = 0.2;
-            world.addBody(objs.bodys[i]);
+            _this.world.addBody(objs.bodys[i]);
             createMesh(objs, objType, i);
         } else {
             // repurpose the existing rigid body & mesh
@@ -426,6 +428,7 @@ Dash.Machine.prototype.objects = function (_this) {
         }
 
         if (objs.dynMeshs[i]) {
+            // scale the outer mesh slightly larger so it's visible
             objs.dynMeshs[i].scale.set(w * 1.01, w * 1.01, w * 1.01);
             objs.dynMeshs[i].visible = true;
         }
@@ -450,6 +453,7 @@ Dash.Machine.prototype.objects = function (_this) {
         objs.objActiveCount++;
 
         if (objType === ObjType.Block) {
+            // write text to the dyn mesh's material and activate bumpmap
             _this.Materials.WriteBlockText(objs.dynamicTextures[i], data);
             objs.dynMeshs[i].material.bumpMap = objs.dynamicTextures[i].texture;
             objs.dynMeshs[i].material.needsUpdate = true;
@@ -477,6 +481,7 @@ Dash.Machine.prototype.objects = function (_this) {
     function createMesh(objs, objType, i) {
 
         if (objType === ObjType.Tx) {
+
             objs.mats[i] = getTXMat(objs, i);
             objs.meshs[i] = new THREE.Mesh(getTXGeom(objs.data[i]), objs.mats[i]);
 
@@ -485,15 +490,17 @@ Dash.Machine.prototype.objects = function (_this) {
             // create dynamic tex
             objs.dynamicTextures[i] = new THREEx.DynamicTexture(256, 256);
             objs.mats[i] = _this.Materials.GetTextMat(objs.dynamicTextures[i]);
+
+            // additional outer mesh to apply the dynamic tex on
             objs.dynMeshs[i] = new THREE.Mesh(_this.Materials.geomCube, objs.mats[i]);
             objs.dynMeshs[i].castShadow = false;
             objs.dynMeshs[i].receiveShadow = false;
-            scene.add(objs.dynMeshs[i]);
+            _this.scene.add(objs.dynMeshs[i]);
 
             _this.Materials.geomCube.uvsNeedUpdate = true;
             objs.meshs[i] = new THREE.Mesh(_this.Materials.geomCube, _this.Materials.matBlock);
         }
-        scene.add(objs.meshs[i]);
+        _this.scene.add(objs.meshs[i]);
         objs.meshs[i].castShadow = true;
         objs.meshs[i].receiveShadow = (objType === ObjType.Block);
     }
@@ -569,23 +576,23 @@ Dash.Machine.prototype.materials = function (_this) {
     this.groundPhysMat = new CANNON.Material("groundPhysMat");
     this.objPhysMat = new CANNON.Material("objPhysMat");
 
-    this.Init = function() {
+    this.Init = function () {
         // obj contact with ground
-        world.addContactMaterial(new CANNON.ContactMaterial(_this.Materials.objPhysMat, _this.Materials.groundPhysMat, {
+        _this.world.addContactMaterial(new CANNON.ContactMaterial(_this.Materials.objPhysMat, _this.Materials.groundPhysMat, {
             friction: 0.00175,
             frictionEquationStiffness: 1e8,
             restitution: 0.0035,
             contactEquationStiffness: 1e8,
-            contactEquationRelaxation: 4.5,
+            contactEquationRelaxation: 4.5
         }));
 
         // obj contact with obj
-        world.addContactMaterial(new CANNON.ContactMaterial(_this.Materials.objPhysMat, _this.Materials.objPhysMat, {
+        _this.world.addContactMaterial(new CANNON.ContactMaterial(_this.Materials.objPhysMat, _this.Materials.objPhysMat, {
             friction: 0.35,
             frictionEquationStiffness: 1e6,
             restitution: 0.075,
             contactEquationStiffness: 1e8,
-            contactEquationRelaxation: 3,
+            contactEquationRelaxation: 3
         }));
     };
 
@@ -613,7 +620,7 @@ Dash.Machine.prototype.materials = function (_this) {
             lineHeight: 0.15,
             font: "bold " + (0.15 * 256) + "px Arial",
             align: 'center',
-            fillStyle: '#ffffff',
+            fillStyle: '#ffffff'
             //font: "36px Dash Font"
         });
     };
@@ -667,12 +674,12 @@ Dash.Machine.prototype.settings = function (_this) {
 
     function bumpQuality(up) {
         if (up) {
-            if (worldQualityLevel === qualityLevels.mid) _this.Settings.SetQuality(qualityLevels.hi);
-            else if (worldQualityLevel === qualityLevels.lo) _this.Settings.SetQuality(qualityLevels.mid);
-            else if (worldQualityLevel === qualityLevels.hi) _this.Settings.SetQuality(qualityLevels.lo);
+            if (_this.QualityLevel === qualityLevels.mid) _this.Settings.SetQuality(qualityLevels.hi);
+            else if (_this.QualityLevel === qualityLevels.lo) _this.Settings.SetQuality(qualityLevels.mid);
+            else if (_this.QualityLevel === qualityLevels.hi) _this.Settings.SetQuality(qualityLevels.lo);
         } else {
-            if (worldQualityLevel === qualityLevels.hi) _this.Settings.SetQuality(qualityLevels.mid);
-            else if (worldQualityLevel === qualityLevels.mid) _this.Settings.SetQuality(qualityLevels.lo);
+            if (_this.QualityLevel === qualityLevels.hi) _this.Settings.SetQuality(qualityLevels.mid);
+            else if (_this.QualityLevel === qualityLevels.mid) _this.Settings.SetQuality(qualityLevels.lo);
         }
     }
 
@@ -681,14 +688,14 @@ Dash.Machine.prototype.settings = function (_this) {
     };
 
     this.SetQuality = function (quality) {
-        worldQualityLevel = quality;
-        if (worldQualityLevel === qualityLevels.lo) {
+        _this.QualityLevel = quality;
+        if (_this.QualityLevel === qualityLevels.lo) {
             setPhysics(30, -20, true, 5, 1, false);
             _this.Set.spotLight.visible = true;
             _this.Set.spotLight2.visible = _this.Set.spotLight3.visible = _this.Set.spotLight4.visible = false;
         } else {
             _this.Set.spotLight.visible = false;
-            if (worldQualityLevel === qualityLevels.mid) {
+            if (_this.QualityLevel === qualityLevels.mid) {
                 setPhysics(60, -90, false, 2, 6, true);
                 setLight(_this.Set.spotLight2, true, true);
                 setLight(_this.Set.spotLight3, false, false);
@@ -709,14 +716,14 @@ Dash.Machine.prototype.settings = function (_this) {
     }
 
     function setPhysics(timeStep, gravity, fastNormalize, skip, iterations, shadow) {
-        renderer.shadowMap.enabled = renderer.antialias = shadow;
+        _this.renderer.shadowMap.enabled = _this.renderer.antialias = shadow;
         _this.Settings.TimeStep = 1 / timeStep;
-        world.gravity.set(0, gravity, 0);
-        world.broadphase = new CANNON.NaiveBroadphase();
-        world.solver.tolerance = 0.001;
-        world.quatNormalizeFast = fastNormalize;
-        world.quatNormalizeSkip = skip;
-        world.solver.iterations = iterations;
+        _this.world.gravity.set(0, gravity, 0);
+        _this.world.broadphase = new CANNON.NaiveBroadphase();
+        _this.world.solver.tolerance = 0.001;
+        _this.world.quatNormalizeFast = fastNormalize;
+        _this.world.quatNormalizeSkip = skip;
+        _this.world.solver.iterations = iterations;
     }
 };
 
@@ -800,7 +807,7 @@ Dash.Machine.prototype.audio = function (_this) {
     var audioBias = 0.2;
     this.Mute = true;
 
-    // Play sample based on obj type, size
+    // Play sample based on obj type, size, collision magnitude
     this.Play = function (mag, size, isBlock) {
         if (_this.Audio.Mute) return;
         if (isBlock) blocks.PlayAudio(mag * 0.3);
@@ -876,7 +883,8 @@ Dash.Machine.prototype.net = function (_this) {
     var lastConnected;
 
     this.Init = function () {
-        // Add best block and its tx at start
+        // Add best block and its tx at start then keep checking
+        // the server is still available at regular intervals
         pingBestBlock();
     };
 
@@ -893,6 +901,7 @@ Dash.Machine.prototype.net = function (_this) {
                     });
             });
         }
+        // keep pinging
         setTimeout(pingBestBlock, 5000);
     }
 
@@ -901,6 +910,7 @@ Dash.Machine.prototype.net = function (_this) {
         var maxTx = Math.min(block.tx.length, 30);
         var cbCount = 0;
         var outCount = 0;
+        // request amounts for each TXO based on the address
         for (var i = 0; i < maxTx; i++) {
             get("tx/" + block.tx[i], function (data) {
                 cbCount++;
@@ -949,7 +959,7 @@ Dash.Machine.prototype.net = function (_this) {
             xhr.open('GET', url, true); // Browsers
         } else if (typeof XDomainRequest != "undefined") {
             xhr = new XDomainRequest(); // IE
-            xhr.open(method, url);
+            xhr.open('GET', url);
         } else  xhr = null;
         if (xhr) {
             xhr.onload = function () {
@@ -970,6 +980,7 @@ Dash.Machine.prototype.net = function (_this) {
     }
 
     function setNetErr() {
+        // show the loader when no connection
         _this.UI.ShowLoader(true);
     }
 };
