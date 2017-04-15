@@ -632,6 +632,7 @@ Dash.Machine.prototype.materials = function (_this) {
             specular: 0xbbbbbb,
             shininess: 500,
             shading: shading,
+            side: THREE.FrontSide,
             transparent: true
         });
     };
@@ -648,6 +649,7 @@ Dash.Machine.prototype.materials = function (_this) {
             shininess: 500,
             bumpMap: tmap,
             bumpScale: 0.9,
+            side: THREE.FrontSide,
             shading: shading
         });
     }
