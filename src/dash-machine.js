@@ -40,6 +40,7 @@ Dash.Machine = function () {
         this.Net.Init();
         this.Set.Init();
         this.Settings.Init();
+        this.Materials.Init();
         this.UI.Init();
 
         PreLoad();
@@ -227,30 +228,19 @@ Dash.Machine.prototype.set = function (_this) {
         groundMesh.receiveShadow = true;
         scene.add(groundMesh);
 
-        // Physics material (billiards..)
-        world.addContactMaterial(new CANNON.ContactMaterial(_this.Materials.defPhysMat, _this.Materials.defPhysMat, {
-            friction: 0.01,
-            restitution: 0.005,
-            contactEquationStiffness: 1e12,
-            contactEquationRelaxation: 3,
-            frictionEquationStiffness: 1e8,
-            frictionEquationRegularizationTime: 10,
-            contactEquationRegularizationTime: 10
-        }));
-
         // collider - we need to translate CANNON.js cylnder geom to THREE.js by aligning Z to Y axis
         var groundShape = new CANNON.Cylinder(radius * 1.01, radius * 1.01, cheight, rSegs / 3);
         var quat = new CANNON.Quaternion();
         quat.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
         groundShape.transformAllPoints(new CANNON.Vec3(0, 0, 0), quat);
-        var groundBody = new CANNON.Body({ mass: 0, material: _this.Materials.defPhysMat });
+        var groundBody = new CANNON.Body({ mass: 0, material: _this.Materials.groundPhysMat });
         groundBody.addShape(groundShape);
         groundBody.position.set(0, yOffset - (cheight / 2) + 0.5, 0);
         world.addBody(groundBody);
 
         // additional collider, Cannon can't do continuous collisions
         var shape = new CANNON.Box(new CANNON.Vec3(radius * 0.69, 1, radius * 0.69));
-        var body = new CANNON.Body({ mass: 0, material: _this.Materials.defPhysMat });
+        var body = new CANNON.Body({ mass: 0, material: _this.Materials.groundPhysMat });
         body.addShape(shape);
         body.position.set(0, -0.5, 0);
         world.addBody(body);
@@ -294,7 +284,7 @@ Dash.Machine.prototype.objects = function (_this) {
     var ySpawnVar = 15;
     var dropH = 88;
     var dropForce = 20;
-    var aVel = 0.5;
+    var aVel = 0.25;
     var massMulti = 2;
     var scaleMulti = 3;
     var txObjects = new ObjPool();
@@ -365,7 +355,7 @@ Dash.Machine.prototype.objects = function (_this) {
         var objs = objType === ObjType.Tx ? txObjects : blocksObjects;
         var i = objs.active.length;
 
-        // create new obj or replace existing in the pool
+        // replace an existing object if the pool is full
         if (((objType === ObjType.Tx) && (i >= _this.maxTx))
             || ((objType === ObjType.Block) && (i >= _this.maxBlocks))) {
 
@@ -409,22 +399,23 @@ Dash.Machine.prototype.objects = function (_this) {
             mass = Math.pow(w, 3) * 4.18879 * massMulti;
         } else if (objType = ObjType.Block) {
             w = 4.2 * scaleMulti;
-            mass = 75 * massMulti;
+            mass = 100 * massMulti;
         }
 
         // first use
         if (objs.meshs[i] == null) {
-            objs.bodys[i] = new CANNON.Body({mass: mass, material: _this.Materials.defPhysMat });
+            objs.bodys[i] = new CANNON.Body({mass: mass, material: _this.Materials.objPhysMat });
             if (objType === ObjType.Tx) {
                 objs.bodys[i].addShape(new CANNON.Sphere(w));
             } else if (objType === ObjType.Block) {
                 objs.bodys[i].addShape(new CANNON.Box(new CANNON.Vec3(w / 2, w / 2, w / 2)));
             }
             objs.bodys[i].linearDamping = 0.15;
-            objs.bodys[i].angularDamping = 0.15;
+            objs.bodys[i].angularDamping = 0.2;
             world.addBody(objs.bodys[i]);
             createMesh(objs, objType, i);
         } else {
+            // repurpose the existing rigid body & mesh
             objs.bodys[i].shapes[0].radius = w;
             objs.bodys[i].shapes[0].boundingSphereRadius = w;
             objs.bodys[i].shapes[0].updateBoundingSphereRadius();
@@ -504,7 +495,7 @@ Dash.Machine.prototype.objects = function (_this) {
         }
         scene.add(objs.meshs[i]);
         objs.meshs[i].castShadow = true;
-        objs.meshs[i].receiveShadow = false;
+        objs.meshs[i].receiveShadow = (objType === ObjType.Block);
     }
 
     function updateObjects(objs) {
@@ -575,7 +566,28 @@ Dash.Machine.prototype.materials = function (_this) {
     this.matPlinth2 = loadMat('assets/textures/plinth2.png');
     this.matSwatch = loadMat('assets/textures/swatch-blue.png');
     this.geomCube = new THREE.BoxGeometry(1, 1, 1);
-    this.defPhysMat = new CANNON.Material("defPhysMat");
+    this.groundPhysMat = new CANNON.Material("groundPhysMat");
+    this.objPhysMat = new CANNON.Material("objPhysMat");
+
+    this.Init = function() {
+        // obj contact with ground
+        world.addContactMaterial(new CANNON.ContactMaterial(_this.Materials.objPhysMat, _this.Materials.groundPhysMat, {
+            friction: 0.00175,
+            frictionEquationStiffness: 1e8,
+            restitution: 0.0035,
+            contactEquationStiffness: 1e8,
+            contactEquationRelaxation: 4.5,
+        }));
+
+        // obj contact with obj
+        world.addContactMaterial(new CANNON.ContactMaterial(_this.Materials.objPhysMat, _this.Materials.objPhysMat, {
+            friction: 0.35,
+            frictionEquationStiffness: 1e6,
+            restitution: 0.075,
+            contactEquationStiffness: 1e8,
+            contactEquationRelaxation: 3,
+        }));
+    };
 
     this.GetGradTex = function (color) {
         var c = document.createElement("canvas");
@@ -671,17 +683,18 @@ Dash.Machine.prototype.settings = function (_this) {
     this.SetQuality = function (quality) {
         worldQualityLevel = quality;
         if (worldQualityLevel === qualityLevels.lo) {
-            setPhysics(30, -20, true, 3, 1, false);
+            setPhysics(30, -20, true, 5, 1, false);
             _this.Set.spotLight.visible = true;
             _this.Set.spotLight2.visible = _this.Set.spotLight3.visible = _this.Set.spotLight4.visible = false;
         } else {
-            setPhysics(60, -90, false, 0, 6, true);
             _this.Set.spotLight.visible = false;
             if (worldQualityLevel === qualityLevels.mid) {
+                setPhysics(60, -90, false, 2, 6, true);
                 setLight(_this.Set.spotLight2, true, true);
                 setLight(_this.Set.spotLight3, false, false);
                 setLight(_this.Set.spotLight4, false, false);
             } else {
+                setPhysics(80, -150, false, 0, 8, true);
                 setLight(_this.Set.spotLight2, false, false);
                 setLight(_this.Set.spotLight3, true, true);
                 setLight(_this.Set.spotLight4, true, true);
