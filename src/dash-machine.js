@@ -58,11 +58,10 @@ Dash.Machine = function () {
 
     // Main loop
     function Update() {
-        // Play mode
+        // Pre-Play Modes
         if (_this.playMode === _this.PlayModes.preload) {
             preloadFrameCount++;
-        }
-        else if (_this.playMode === _this.PlayModes.loaded) {
+        } else if (_this.playMode === _this.PlayModes.loaded) {
             // Wait for first block download
             if (_this.bestBlock) {
                 // Start
@@ -70,13 +69,13 @@ Dash.Machine = function () {
                 _this.AddBlock(_this.bestBlock);
                 _this.Net.Listen();
                 _this.playMode = _this.PlayModes.play;
-            }
-        } else if (_this.playMode === _this.PlayModes.play) {
-            // update block age
-            if (_this.bestBlock) {
-                var dt = new Date(null);
-                dt.setSeconds((parseInt(new Date().getTime() / 1000) - _this.bestBlock.time));
-                _this.UI.SetNextBlockTime(dt.toISOString().substr(14, 5));
+
+                // update block age once per second..
+                setInterval(function () {
+                    var dt = new Date(null);
+                    dt.setSeconds((parseInt(new Date().getTime() / 1000) - _this.bestBlock.time));
+                    _this.UI.SetNextBlockTime(dt.toISOString().substr(14, 5));
+                }, 1000)
             }
         }
         _this.Objects.Update();
