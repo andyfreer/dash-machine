@@ -620,7 +620,8 @@ DashMachine.prototype.materials = function (_this) {
         tex.drawImage(imgBlock, 0, 0).drawTextCooked({
             text: _this.UI.FormatCurrency(blockHeight, 0, '.', ','),
             lineHeight: 0.15,
-            font: (0.15 * 256) + "px Dash Font",
+            //font: (0.15 * 256) + "px Dash Font",
+            font: (0.15 * 256) + "px Arial",
             align: 'center',
             fillStyle: '#ffffff',
         });

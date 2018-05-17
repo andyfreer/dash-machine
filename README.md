@@ -14,7 +14,7 @@ git clone https://github.com/andyfreer/dash-machine
 
 Install npm packages:
 ```
-cd dash-schema && npm install
+cd dash-machine && npm install
 ```
 
 Build:
