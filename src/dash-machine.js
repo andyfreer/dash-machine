@@ -2,10 +2,14 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-var Dash = Dash || {};
+var THREE = require('three');
+var CANNON = require('cannon');
+var io = require('socket.io-client');
+var THREEx = require('./threex.dynamictexture.js');
+THREE.OrbitControls = require('./OrbitControls.js');
 
 // Dash Blockchain Visualizer using Three.js, Cannon.js and Insight API
-Dash.Machine = function () {
+DashMachine = function () {
     var _this = this;
 
     this.Set = new this.set(this);
@@ -110,7 +114,7 @@ Dash.Machine = function () {
     }
 };
 
-Dash.Machine.prototype.set = function (_this) {
+DashMachine.prototype.set = function (_this) {
 
     var orbitControl = null;
     this.spotLight = new THREE.SpotLight(0xffffff);
@@ -222,8 +226,8 @@ Dash.Machine.prototype.set = function (_this) {
             }
         }
         // construct the mesh
-        var groundMesh = new THREE.Mesh(geoCyl, new THREE.MultiMaterial([
-            _this.Materials.matPlinth2, _this.Materials.matPlinth, _this.Materials.matPlinth2]));
+        var groundMesh = new THREE.Mesh(geoCyl, [
+            _this.Materials.matPlinth2, _this.Materials.matPlinth, _this.Materials.matPlinth2]);
         groundMesh.position.y = yOffset - (cheight / 2) + 0.5;
         groundMesh.castShadow = false;
         groundMesh.receiveShadow = true;
@@ -252,8 +256,8 @@ Dash.Machine.prototype.set = function (_this) {
         sl.position.set(x, y, z);
         sl.shadow.darkness = 0.75;
         sl.shadow.camera.fov = 30;
-        sl.shadow.camera.near = 1;
-        sl.shadow.camera.far = 5;
+        sl.shadow.camera.near = 0.5;
+        sl.shadow.camera.far = 500;
         sl.shadow.mapSize.width = mapSize;
         sl.shadow.mapSize.height = mapSize;
         sl.castShadow = (mapSize === null);
@@ -264,7 +268,7 @@ Dash.Machine.prototype.set = function (_this) {
 };
 
 // Object Manager
-Dash.Machine.prototype.objects = function (_this) {
+DashMachine.prototype.objects = function (_this) {
 
     var ObjType = {Tx: 0, Block: 1};
 
@@ -560,9 +564,8 @@ Dash.Machine.prototype.objects = function (_this) {
     }
 };
 
-Dash.Machine.prototype.materials = function (_this) {
+DashMachine.prototype.materials = function (_this) {
 
-    var shading = THREE.SmoothShading;
     var imgBlock = document.createElement('img');
 
     this.matBlock = loadMat('assets/textures/block.png');
@@ -617,10 +620,9 @@ Dash.Machine.prototype.materials = function (_this) {
         tex.drawImage(imgBlock, 0, 0).drawTextCooked({
             text: _this.UI.FormatCurrency(blockHeight, 0, '.', ','),
             lineHeight: 0.15,
-            font: "bold " + (0.15 * 256) + "px Arial",
+            font: (0.15 * 256) + "px Dash Font",
             align: 'center',
-            fillStyle: '#ffffff'
-            //font: "36px Dash Font"
+            fillStyle: '#ffffff',
         });
     };
 
@@ -630,7 +632,6 @@ Dash.Machine.prototype.materials = function (_this) {
             color: 0xbbbbbb,
             specular: 0xbbbbbb,
             shininess: 500,
-            shading: shading,
             side: THREE.FrontSide,
             transparent: true
         });
@@ -648,13 +649,12 @@ Dash.Machine.prototype.materials = function (_this) {
             shininess: 500,
             bumpMap: tmap,
             bumpScale: 0.9,
-            side: THREE.FrontSide,
-            shading: shading
+            side: THREE.FrontSide
         });
     }
 };
 
-Dash.Machine.prototype.settings = function (_this) {
+DashMachine.prototype.settings = function (_this) {
 
     var qualityLevels = {lo: 0, mid: 1, hi: 2};
 
@@ -728,7 +728,7 @@ Dash.Machine.prototype.settings = function (_this) {
     }
 };
 
-Dash.Machine.prototype.ui = function (_this) {
+DashMachine.prototype.ui = function (_this) {
 
     var UIStates = {loading: 0, play: 1};
     var UIState = UIStates.loading;
@@ -803,7 +803,7 @@ Dash.Machine.prototype.ui = function (_this) {
     }
 };
 
-Dash.Machine.prototype.audio = function (_this) {
+DashMachine.prototype.audio = function (_this) {
 
     var audioBias = 0.2;
     this.Mute = true;
@@ -879,7 +879,7 @@ Dash.Machine.prototype.audio = function (_this) {
     ]);
 };
 
-Dash.Machine.prototype.net = function (_this) {
+DashMachine.prototype.net = function (_this) {
 
     var lastConnected;
 
@@ -985,3 +985,5 @@ Dash.Machine.prototype.net = function (_this) {
         _this.UI.ShowLoader(true);
     }
 };
+
+module.exports = DashMachine;

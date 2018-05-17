@@ -1,5 +1,7 @@
 // Adapted from: https://github.com/jeromeetienne/threex.dynamictexture
 
+var THREE = require('three');
+
 var THREEx	= THREEx	|| {}
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -152,3 +154,5 @@ THREEx.DynamicTexture.prototype.drawImage	= function(/* same params as context2d
 	// for chained API
 	return this;
 }
+
+module.exports = THREEx;

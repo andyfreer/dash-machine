@@ -8,12 +8,8 @@
     <link rel="shortcut icon" href="assets/icons/favicon.ico">
     <link rel="stylesheet" href="assets/css/dm.css">
 
-    <script src="src/vendor/three.min.js"></script>
-    <script src="src/vendor/cannon.min.js"></script>
-    <script src="src/vendor/OrbitControls.js"></script>
-    <script src="src/vendor/threex.dynamictexture.js"></script>
-    <script src="src/vendor/socket.io.js"></script>
-    <script src="src/dash-machine.js"></script>
+    <script src="bundle.js"></script>
+
 </head>
 <body>
 
@@ -76,7 +72,7 @@
 </div>
 
 <script>
-    var dm = new Dash.Machine();
+    var dm = new DashMachine();
 
     window.addEventListener('load', function (e) {
 

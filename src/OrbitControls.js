@@ -7,6 +7,8 @@
  */
 /*global THREE, console */
 
+var THREE = require('three');
+
 ( function () {
 
 	function OrbitConstraint ( object ) {
@@ -1116,3 +1118,5 @@
 	} );
 
 }() );
+
+module.exports = THREE.OrbitControls;
