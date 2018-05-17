@@ -621,7 +621,7 @@ DashMachine.prototype.materials = function (_this) {
             text: _this.UI.FormatCurrency(blockHeight, 0, '.', ','),
             lineHeight: 0.15,
             //font: (0.15 * 256) + "px Dash Font",
-            font: (0.15 * 256) + "px Arial",
+            font: "bold " + (0.15 * 256) + "px Arial",
             align: 'center',
             fillStyle: '#ffffff',
         });
@@ -934,7 +934,18 @@ DashMachine.prototype.net = function (_this) {
 
     // Wire websockets
     this.Listen = function () {
-        var socket = io(_this.options.apiURL);
+
+        var socket = io.connect(_this.options.apiURL, {
+            transports: [
+                'websocket',
+                'flashsocket',
+                'htmlfile',
+                'xhr-polling',
+                'jsonp-polling',
+                'polling'
+            ]
+        });
+
         socket.on('connect', function () {
             socket.emit('subscribe', 'inv');
         });
