@@ -1,20 +1,30 @@
 ## Dash Machine
 
-Live version can be viewed [here](https://andyfreer.github.io/dash-machine/index.html)
+Live demo: [Dash Machine](https://andyfreer.github.io/dash-machine/index.html)
 
 Dash Blockchain Visualizer using Three.js, Cannon.js and Insight API.
 
-Due to the lack of open-source 3D blockchain visualizers I decided to roll one for Dash.. inspired by BitBonkers & BitListen
+### Build
+
+Clone the repo:
+
+```
+git clone https://github.com/andyfreer/dash-machine
+```
+
+Install npm packages:
+```
+cd dash-schema && npm install
+```
+
+Build:
+```
+npm run build
+```
 
 ### Goal
 
-To create an ultra-simple Dash 3D visualization with minimal code/dependencies that can illustrate real-time activity such as new tx, blocks and future Evolution objects, in an easy-to-use, seamless way and on a wide range of devices.
-
-### Develop / Build
-
-No build/npm etc yet - just edit the JavaScript in [/src/dash-machine.js](https://github.com/andyfreer/dash-machine/blob/master/src/dash-machine.js) and load [/index.html](https://github.com/andyfreer/dash-machine/blob/master/index.html) from a local webserver to run.  
-
-Vendor code can be found in [/src/vendor](https://github.com/andyfreer/dash-machine/tree/master/src/vendor)  and content files are stored in [/assets/](https://github.com/andyfreer/dash-machine/tree/master/assets).
+Due to the lack of open-source 3D blockchain visualizers I decided to roll one for Dash.. inspired by BitBonkers & BitListen
 
 ### Overview
 
