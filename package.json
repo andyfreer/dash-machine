@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "build": "browserify ./src/dash-machine.js | uglifyjs -c > bundle.js",
-    "build:debug": "browserify ./src/dash-machine.js -o bundle.js"
+    "build": "browserify ./src/dash-machine.js | uglifyjs -c > ./build/dash-machine.js",
+    "build:debug": "browserify ./src/dash-machine.js -o ./build/dash-machine.js"
   },
   "dependencies": {
     "cannon": "^0.6.2",
