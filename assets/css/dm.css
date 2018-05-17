@@ -22,7 +22,7 @@ canvas {
 
 @font-face {
     font-family: "Dash Font";
-    src: url('../fonts/gunshipital.ttf') format("truetype");
+    src: url('../fonts/Handel_Gothic_Italic.ttf') format("truetype");
 }
 
 .hudContainer {
@@ -126,7 +126,7 @@ canvas {
 
 .hudTextLabel {
     color: #ffffff;
-    font-size: 16px;
+    font-size: 18px;
     margin-top: 5px;
     margin-right: 5px;
     display: inline-block;
@@ -135,7 +135,7 @@ canvas {
 
 .hudText {
     color: #ffffff;
-    font-size: 39px;
+    font-size: 22px;
     display: inline-block;
     vertical-align: top;
     margin-right: 5px;
