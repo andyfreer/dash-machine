@@ -122,6 +122,9 @@ DashMachine.prototype.set = function (_this) {
     this.spotLight3 = new THREE.SpotLight(0xffffff);
     this.spotLight4 = new THREE.SpotLight(0xffffff);
 
+    var n = navigator.userAgent;
+    this.isMobile = (n.match(/Android/i) || n.match(/webOS/i) || n.match(/iPhone/i) || n.match(/iPad/i) || n.match(/iPod/i) || n.match(/BlackBerry/i) || n.match(/Windows Phone/i));
+
     this.Init = function () {
         initRenderer();
         initLights();
@@ -137,19 +140,14 @@ DashMachine.prototype.set = function (_this) {
 
     function initRenderer() {
 
-        var isMobile = false;
-        var n = navigator.userAgent;
-        if (n.match(/Android/i) || n.match(/webOS/i) || n.match(/iPhone/i) || n.match(/iPad/i) || n.match(/iPod/i) || n.match(/BlackBerry/i) || n.match(/Windows Phone/i))
-            isMobile = true;
-
         _this.renderer = new THREE.WebGLRenderer({
             canvas: _this.canvas,
-            precision: isMobile ? "lowp" : "mediump",
-            antialias: !isMobile,
+            precision: this.isMobile ? "lowp" : "mediump",
+            antialias: !this.isMobile,
             sortObjects: false,
             preserveDrawingBuffer: false
         });
-        _this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        _this.renderer.shadowMap.type = (_this.Set.isMobile ? THREE.BasicShadowMap : THREE.PCFSoftShadowMap);
         _this.renderer.setSize(window.innerWidth, window.innerHeight);
 
         window.addEventListener('resize', function () {
@@ -260,7 +258,7 @@ DashMachine.prototype.set = function (_this) {
         sl.shadow.camera.far = 500;
         sl.shadow.mapSize.width = mapSize;
         sl.shadow.mapSize.height = mapSize;
-        sl.castShadow = (mapSize === null);
+        sl.castShadow = this.isMobile ? false : (mapSize === null);
         sl.intensity = intensity;
         _this.scene.add(sl);
         return sl;
@@ -504,8 +502,8 @@ DashMachine.prototype.objects = function (_this) {
             objs.meshs[i] = new THREE.Mesh(_this.Materials.geomCube, _this.Materials.matBlock);
         }
         _this.scene.add(objs.meshs[i]);
-        objs.meshs[i].castShadow = true;
-        objs.meshs[i].receiveShadow = (objType === ObjType.Block);
+        objs.meshs[i].castShadow = !_this.Set.isMobile;
+        objs.meshs[i].receiveShadow = _this.Set.isMobile ? false : (objType === ObjType.Block);
     }
 
     function updateObjects(objs) {
@@ -599,21 +597,26 @@ DashMachine.prototype.materials = function (_this) {
     };
 
     this.GetGradTex = function (color) {
-        var c = document.createElement("canvas");
-        var ct = c.getContext("2d");
-        var size = 128;
-        c.width = 2;
-        c.height = size;
-        var gradient = ct.createLinearGradient(0, 0, 0, size);
-        var i = color[0].length;
-        while (i--) {
-            gradient.addColorStop(color[0][i], color[1][i]);
+
+        if (_this.Set.isMobile) {
+            return new THREE.DataTexture(1,1,1, THREE.RGBFormat );
+        } else {
+            var c = document.createElement("canvas");
+            var ct = c.getContext("2d");
+            var size = 128;
+            c.width = 2;
+            c.height = size;
+            var gradient = ct.createLinearGradient(0, 0, 0, size);
+            var i = color[0].length;
+            while (i--) {
+                gradient.addColorStop(color[0][i], color[1][i]);
+            }
+            ct.fillStyle = gradient;
+            ct.fillRect(0, 0, 16, size);
+            var texture = new THREE.Texture(c);
+            texture.needsUpdate = true;
+            return texture;
         }
-        ct.fillStyle = gradient;
-        ct.fillRect(0, 0, 16, size);
-        var texture = new THREE.Texture(c);
-        texture.needsUpdate = true;
-        return texture;
     };
 
     this.WriteBlockText = function (tex, blockHeight) {
@@ -628,14 +631,24 @@ DashMachine.prototype.materials = function (_this) {
     };
 
     this.GetTextMat = function (map) {
-        return new THREE.MeshPhongMaterial({
-            map: map.texture,
-            color: 0xbbbbbb,
-            specular: 0xbbbbbb,
-            shininess: 500,
-            side: THREE.FrontSide,
-            transparent: true
-        });
+
+        if (_this.Set.isMobile) {
+            return new THREE.MeshLambertMaterial({
+                map: map.texture,
+                color: 0xbbbbbb,
+                side: THREE.FrontSide,
+                transparent: true
+            });
+        } else {
+            return new THREE.MeshPhongMaterial({
+                map: map.texture,
+                color: 0xbbbbbb,
+                specular: 0xbbbbbb,
+                shininess: 500,
+                side: THREE.FrontSide,
+                transparent: true
+            });
+        }
     };
 
     function loadMat(img) {
@@ -643,15 +656,24 @@ DashMachine.prototype.materials = function (_this) {
         var tmap = texloader.load(img);
         tmap.generateMipmaps = true;
         tmap.magFilter = tmap.minFilter = THREE.LinearFilter;
-        return new THREE.MeshPhongMaterial({
-            map: tmap,
-            color: 0xaaaaaa,
-            specular: 0x888888,
-            shininess: 500,
-            bumpMap: tmap,
-            bumpScale: 0.9,
-            side: THREE.FrontSide
-        });
+
+        if (_this.Set.isMobile) {
+            return new THREE.MeshLambertMaterial({
+                map: tmap,
+                color: 0xaaaaaa,
+                side: THREE.FrontSide
+            });
+        } else {
+            return new THREE.MeshPhongMaterial({
+                map: tmap,
+                color: 0xaaaaaa,
+                specular: 0x888888,
+                shininess: 500,
+                bumpMap: tmap,
+                bumpScale: 0.9,
+                side: THREE.FrontSide
+            });
+        }
     }
 };
 
@@ -714,10 +736,11 @@ DashMachine.prototype.settings = function (_this) {
 
     function setLight(l, vis, shad) {
         l.visible = vis;
-        l.castShadow = shad;
+        l.castShadow = _this.Set.isMobile ? false : shad;
     }
 
     function setPhysics(timeStep, gravity, fastNormalize, skip, iterations, shadow) {
+        shadow = _this.Set.isMobile ? false : shadow;
         _this.renderer.shadowMap.enabled = _this.renderer.antialias = shadow;
         _this.Settings.TimeStep = 1 / timeStep;
         _this.world.gravity.set(0, gravity, 0);
