@@ -860,7 +860,12 @@ DashMachine.prototype.audio = function (_this) {
                 if (pool[i][j].paused || pool[i][j].ended) {
                     pool[i][j].playbackRate = _this.RandRange(0.9, 1.1);
                     pool[i][j].volume = (vol || 0.5) * audioBias;
-                    pool[i][j].play();
+                    var promise = pool[i][j].play();
+                    // prevent pre-user interaction DOM exceptions
+                    if (promise !== undefined) {
+                        promise.then(_ => {
+                        }).catch(e => {});
+                    }
                     break;
                 }
             }
