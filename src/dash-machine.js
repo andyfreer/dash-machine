@@ -90,16 +90,18 @@ DashMachine = function () {
     // run a benchmark at start to determine quality level and preload assets
     function PreLoad() {
         if (_this.options.blocker) {
-            for (var i = 0; i < (_this.maxTx / 3); i++) {
+            for (var i = 0; i < (_this.maxTx / 6); i++) {
                 _this.Objects.AddTX((Math.random() < 0.9) ? Math.random() * 2 : Math.random() * 200);
             }
-            for (var i = 0; i < (_this.maxBlocks / 3); i++) {
+            for (var i = 0; i < (_this.maxBlocks / 6); i++) {
                 _this.Objects.addBlock(1);
             }
-            var preloadTime = 3200;
+            var preloadTime = 4400;
             setTimeout(function () {
                 _this.Objects.Clear();
-                _this.Settings.AutoSetQuality(preloadFrameCount / (preloadTime / 1000));
+                var testFps = preloadFrameCount / (preloadTime / 1000);
+                _this.Settings.AutoSetQuality(testFps);
+                console.log('detected fps: ' + testFps);
                 _this.playMode = _this.PlayModes.loaded;
             }, preloadTime);
         } else {
@@ -691,7 +693,7 @@ DashMachine.prototype.settings = function (_this) {
     this.AutoSetQuality = function (fps) {
         if (fps < 20) {
             bumpQuality(false);
-        } else if (fps > 45) {
+        } else if (fps > 30) {
             bumpQuality(true);
         }
     };
