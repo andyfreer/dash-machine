@@ -3,16 +3,16 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "build": "browserify ./src/dash-machine.js | uglifyjs -c > ./build/dash-machine.js",
+    "build": "browserify ./src/dash-machine.js | uglifyjs --compress --mangle --output ./build/dash-machine.js",
     "build:debug": "browserify ./src/dash-machine.js -o ./build/dash-machine.js"
   },
   "dependencies": {
     "cannon": "^0.6.2",
-    "socket.io-client": "^1.7.4",
-    "three": "^0.92.0"
+    "socket.io-client": "^2.3.0",
+    "three": "^0.113.2"
   },
   "devDependencies": {
     "browserify": "^16.2.2",
-    "uglifyify": "^5.0.0"
+    "uglify-es": "^3.3.9"
   }
 }
