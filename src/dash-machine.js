@@ -29,8 +29,8 @@ DashMachine = function () {
     this.bestBlock = null;
     this.playMode = null;
     this.QualityLevel = null;
-    this.maxTx = 250;
-    this.maxBlocks = 24;
+    this.maxTx = 500;
+    this.maxBlocks = 48;
 
     var preloadFrameCount = 0;
     this.PlayModes = {preload: 0, loaded: 1, play: 2};
