@@ -21,8 +21,15 @@ canvas {
 }
 
 @font-face {
-    font-family: "Dash Font";
-    src: url('../fonts/Handel_Gothic_Italic.ttf') format("truetype");
+    font-family: 'Handel Gothic';
+    src: url('../fonts/HandelGothic-Italic.eot');
+    src: url('../fonts/HandelGothic-Italic.eot?#iefix') format('embedded-opentype'),
+    url('../fonts/HandelGothic-Italic.woff2') format('woff2'),
+    url('../fonts/HandelGothic-Italic.woff') format('woff'),
+    url('../fonts/HandelGothic-Italic.ttf') format('truetype'),
+    url('../fonts/HandelGothic-Italic.svg#HandelGothic-Italic') format('svg');
+    font-weight: normal;
+    font-style: italic;
 }
 
 .hudContainer {
